@@ -19,7 +19,7 @@
 
 ## Endpoints (all require header: x-api-key)
 - POST /api/users/register
-  body: { name }
+   - body: { name }
 - GET /api/pokemon/:name
 
 ## Deploy
