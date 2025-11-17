@@ -1,0 +1,114 @@
+version: v2
+name: poke-bot
+locale: en
+
+nlu:
+  models:
+    - type: supermodel
+      name: supermodel_nl
+  intents:
+    register_name:
+      examples:
+        - "Fajar"
+        - "Sakura Tanaka"
+        - "John Doe"
+      slots:
+        person_name:
+          entity: person_name
+          required: true
+    ask_pokemon:
+      examples:
+        - "pikachu"
+        - "tell me about bulbasaur"
+        - "info pokemon charizard"
+        - "1"
+      slots:
+        pokemon_name:
+          entity: any
+          required: true
+    name_confirmation:
+      examples:
+        - "yes"
+        - "yeah"
+        - "sure"
+        - "betul"
+        - "bener"
+
+states:
+  start:
+    entry:
+      - say: "👋 Hi! Welcome to PokeBot. What's your name?"
+    transitions:
+      - condition: intent == register_name
+        target: collect_contact
+      - fallback: retry_name
+
+  retry_name:
+    entry:
+      - say: "Sorry, I didn't catch that. Please enter your full name."
+    transitions:
+      - condition: intent == register_name
+        target: collect_contact
+      - fallback: retry_name
+
+  collect_contact:
+    entry:
+      - set: user.name = {{ slots.person_name }}
+      - say: "So your name is {{ user.name }}?"
+    transitions:
+      - condition: intent == name_confirmation
+        target: save_user
+
+  save_user:
+    entry:
+      - call:
+          type: http
+          method: POST
+          url: "https://YOUR_API_HOST/api/register"
+          headers:
+            x-api-key: "supersecret"
+          body:
+            name: "{{ user.name }}"
+          onSuccess:
+            - set: user.registered = true
+            - say: |
+                Welcome to PokeBot, {{ user.name }}!
+                You can send "Pokemon information" to get information about a Pokemon
+          onError:
+            - say: "❌ Registration failed. Please try again."
+    transitions:
+      - condition: user.registered == true
+        target: main
+      - fallback: retry_name
+
+  main:
+    entry:
+      - say: "Which Pokémon do you want to know about?"
+    transitions:
+      - condition: intent == ask_pokemon
+        target: fetch_pokemon
+      - fallback: main_help
+
+  main_help:
+    entry:
+      - say: "You can ask me about any Pokémon. Just type its name!"
+    transitions:
+      - target: main
+
+  fetch_pokemon:
+    entry:
+      - call:
+          type: http
+          method: GET
+          url: "https://YOUR_API_HOST/api/pokemon/{{ slots.pokemon_name }}"
+          headers:
+            x-api-key: "supersecret"
+          onSuccess:
+            - say: |
+                {{ response.name | capitalize }} is an <{{ response.types | join:', ' }}> type Pokémon with {{ response.weight }} weight and {{ response.height }} height.
+                Here's a picture of {{ response.name | capitalize }}:
+            - image: "https://img.pokemondb.net/artwork/{{ slots.pokemon_name | lower }}.jpg"
+          onError:
+            - say: "❌ Sorry, I couldn't find information for '{{ slots.pokemon_name }}'. Try another Pokémon name."
+    transitions:
+      - target: main
