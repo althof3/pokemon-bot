@@ -6,8 +6,8 @@ const service = new UserService();
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const { name } = req.body;
-    const user = await service.register(name);
+    const payload = req.body;
+    const user = await service.register(payload);
     res.status(201).json({ data: user });
   } catch (err: any) {
     res.status(400).json({ error: err.message });

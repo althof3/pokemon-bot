@@ -4,19 +4,24 @@ import { User } from "../../db/entity/User";
 export class UserService {
   private userRepo = AppDataSource.getRepository(User);
 
-  async register(name: string): Promise<User> {
-    const existing = await this.userRepo.findOneBy({ name });
+  async register(payload: {name: string, phone: string}): Promise<User & { isNew: boolean}> {
+    console.log('[register user]', payload);
+    
+    const existing = await this.userRepo.findOneBy({ phone: payload.phone });
     if (existing) {
+      const now = new Date();
       await this.userRepo.update(existing.id, {
-        updatedAt: new Date(),
+        updatedAt: now,
       });
-      return existing;
+      return {...existing, updatedAt: now, isNew: false};
     }
-    return this.userRepo.save({
-      name,
+
+    const createdUser = await this.userRepo.save({
+      ...payload,
       loginAt: new Date(),
       createdAt: new Date(),
     });
+    return {...createdUser, isNew: true};
   ;
   }
 }

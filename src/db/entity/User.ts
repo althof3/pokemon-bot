@@ -7,6 +7,9 @@ export class User {
 
   @Column({ length: 255 })
   name!: string;
+  
+  @Column({ length: 255, unique: true, nullable: true })
+  phone!: string;
 
   @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", name: "created_at" })
   createdAt!: Date;
