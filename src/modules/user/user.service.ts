@@ -22,6 +22,14 @@ export class UserService {
       createdAt: new Date(),
     });
     return {...createdUser, isNew: true};
-  ;
   }
+
+  async getUserByPhone(phone: string): Promise<User & { isExist: boolean}> {
+    const user = await this.userRepo.findOneBy({ phone });
+    if (!user) {
+      return {...new User(), isExist: false};
+    }
+    return {...user, isExist: true};
+  }
+
 }
