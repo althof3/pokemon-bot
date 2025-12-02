@@ -28,7 +28,7 @@ export const getUserByPhone = async (req: Request, res: Response) => {
 export const deleteUserByPhone = async (req: Request, res: Response) => {
   try {
     const { phone } = req.params;
-    const user = await service.getUserByPhone(phone);
+    const user = await service.deleteUserByPhone(phone);
     res.status(200).json({ data: user });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
