@@ -5,6 +5,6 @@ const router = Router();
 
 router.post("/register", registerUser);
 router.get("/by-phone/:phone", getUserByPhone);
-router.delete("/by-phone/:phone", deleteUserByPhone);
+router.post("/by-phone/:phone/delete", deleteUserByPhone);
 
 export default router;
