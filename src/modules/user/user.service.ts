@@ -22,5 +22,9 @@ export class UserService {
     }
     return {...user, isExist: true};
   }
+  async deleteUserByPhone(phone: string): Promise<any> {
+    await this.userRepo.delete({ phone });
+    return {success: true};
+  }
 
 }
